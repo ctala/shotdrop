@@ -13,6 +13,7 @@ Everything the Developer Dashboard asks for, ready to paste. Upload `dist/shotdr
 | Icon | `store/icon-store-128.png` |
 | Screenshots (1280×800) | `store/screenshot-1-<lang>.png`, `store/screenshot-2-<lang>.png` |
 | Small promo tile (440×280) | `store/promo-small-<lang>.png` |
+| Marquee promo tile (1400×560) | `store/marquee-<lang>.png` |
 | Homepage URL | https://github.com/ctala/shotdrop |
 | Support URL | https://github.com/ctala/shotdrop/issues |
 

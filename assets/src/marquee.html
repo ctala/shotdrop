@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="brand.css">
+<style>
+  body { width: 1400px; height: 560px; }
+  .content { display: flex; align-items: center; height: 100%; padding: 0 100px; gap: 90px; }
+  .left { flex: 1; }
+  .brand { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; }
+  .brand img { width: 96px; height: 96px; }
+  .brand .wordmark { font-size: 76px; }
+  h1 { font: 700 42px/1.2 var(--mono); color: var(--text); letter-spacing: -0.02em; margin-bottom: 22px; }
+  p.sub { font-size: 21px; color: var(--body); max-width: 620px; }
+  .card { width: 250px; }
+  .card img { display: block; width: 100%; }
+</style>
+</head>
+<body class="glow">
+  <div class="grid"></div>
+  <div class="content">
+    <div class="left">
+      <div class="brand"><img src="icon.svg" alt=""><span class="wordmark">shotdrop<span class="cursor">_</span></span></div>
+      <h1 data-en>Drop a screenshot.<br>Get a link that <span class="hl">expires</span>.</h1>
+      <h1 data-es>Suelta una captura.<br>Recibe un link que <span class="hl">caduca</span>.</h1>
+      <p class="sub" data-en>Made for handing screenshots to AI agents. On your own Cloudflare R2.</p>
+      <p class="sub" data-es>Hecho para pasarle capturas a agentes de IA. En tu propio Cloudflare R2.</p>
+    </div>
+    <div class="card"><img data-src="../ui/panel-{lang}.png" alt=""></div>
+  </div>
+  <script src="lang.js"></script>
+</body>
+</html>

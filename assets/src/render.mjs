@@ -62,6 +62,7 @@ if (['store', 'todo'].includes(que)) {
     await htmlAPng('store-1.html', 1280, 800, path.join(RAIZ, `store/screenshot-1-${lang}.png`), { lang });
     await htmlAPng('store-2.html', 1280, 800, path.join(RAIZ, `store/screenshot-2-${lang}.png`), { lang });
     await htmlAPng('promo.html', 440, 280, path.join(RAIZ, `store/promo-small-${lang}.png`), { lang });
+    await htmlAPng('marquee.html', 1400, 560, path.join(RAIZ, `store/marquee-${lang}.png`), { lang });
   }
 }
 
