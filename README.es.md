@@ -177,7 +177,7 @@ shotdrop es gratis y de código abierto. Si te ahorra unos minutos al día, pued
 
 ## Licencia
 
-El código tiene [licencia MIT](LICENSE). El nombre y el logo de **shotdrop** no están cubiertos por ella: por favor no los uses en un fork o en un producto derivado.
+El código tiene [licencia MIT](LICENSE). El nombre y el logo de **shotdrop** no están cubiertos por ella: ver [TRADEMARK.md](TRADEMARK.md).
 
 ---
 

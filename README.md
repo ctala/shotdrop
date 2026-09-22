@@ -190,7 +190,7 @@ shotdrop is free and open source. If it saves you a few minutes a day, you can [
 
 ## License
 
-Code under the [MIT license](LICENSE). The **shotdrop** name and logo are not covered by it: please don't use them for a fork or a derivative product.
+Code under the [MIT license](LICENSE). The **shotdrop** name and logo are not covered by it: see [TRADEMARK.md](TRADEMARK.md).
 
 ---
 
