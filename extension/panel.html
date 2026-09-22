@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>shotdrop</title>
+<style>
+  :root {
+    --bg: #14141c; --card: #1e1e2a; --line: #32323f;
+    --txt: #ececf2; --muted: #9a9aab; --ok: #39ff14; --err: #ff5c7a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 14px; background: var(--bg); color: var(--txt);
+    font: 13px/1.5 -apple-system, system-ui, sans-serif;
+  }
+  #zona {
+    border: 2px dashed var(--line); border-radius: 12px; padding: 30px 14px;
+    text-align: center; color: var(--muted); transition: .12s;
+  }
+  #zona.activa { border-color: var(--ok); color: var(--txt); background: #1a2418; }
+  #zona strong { display: block; color: var(--txt); font-size: 14px; margin-bottom: 4px; }
+  kbd {
+    background: var(--card); border: 1px solid var(--line); border-radius: 4px;
+    padding: 1px 5px; font-size: 11px; font-family: ui-monospace, monospace;
+  }
+  #estado { min-height: 18px; margin: 10px 2px; font-size: 12px; color: var(--muted); }
+  #estado.error { color: var(--err); }
+  #estado.listo { color: var(--ok); }
+  .item {
+    display: flex; gap: 8px; align-items: center; background: var(--card);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin-bottom: 6px;
+  }
+  .item img { width: 38px; height: 38px; object-fit: cover; border-radius: 5px; flex: none; }
+  .item a {
+    flex: 1; min-width: 0; color: var(--txt); font-family: ui-monospace, monospace;
+    font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .item button {
+    flex: none; background: transparent; border: 1px solid var(--line); color: var(--muted);
+    border-radius: 6px; padding: 5px 9px; cursor: pointer; font-size: 11px;
+  }
+  .item button:hover { color: var(--txt); border-color: var(--muted); }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+       margin: 18px 2px 8px; font-weight: 600; }
+  #config { margin-top: 18px; font-size: 11px; color: var(--muted); }
+  #config a { color: var(--muted); }
+</style>
+</head>
+<body>
+  <div id="zona">
+    <strong>Suelta la captura aquí</strong>
+    o pega con <kbd>⌘V</kbd>
+  </div>
+  <div id="estado"></div>
+  <h2 id="titulo" hidden>Últimos links</h2>
+  <div id="lista"></div>
+  <div id="config"><a href="#" id="abrirOpciones">Configuración</a></div>
+  <script src="panel.js"></script>
+</body>
+</html>

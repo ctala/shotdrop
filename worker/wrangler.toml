@@ -1,0 +1,14 @@
+name = "shotdrop"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# El bucket es privado a proposito: se sirve por este Worker, no por dominio publico.
+[[r2_buckets]]
+binding = "SHOTS"
+bucket_name = "shots"
+
+# UPLOAD_TOKEN no va aca. Se pone con:  wrangler secret put UPLOAD_TOKEN
+
+[[routes]]
+pattern = "shots.cristiantala.com"
+custom_domain = true

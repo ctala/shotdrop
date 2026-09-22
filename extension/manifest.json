@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "shotdrop",
+  "version": "0.1.0",
+  "description": "Arrastra una captura y te deja un link que caduca, guardado en tu propio R2.",
+  "permissions": ["storage", "sidePanel", "clipboardWrite"],
+  "host_permissions": ["https://shots.cristiantala.com/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "shotdrop — arrastra una captura" },
+  "side_panel": { "default_path": "panel.html" },
+  "options_page": "options.html"
+}
