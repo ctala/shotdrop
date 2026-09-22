@@ -40,6 +40,8 @@
     border-radius: 6px; padding: 5px 9px; cursor: pointer; font-size: 11px;
   }
   .item button:hover { color: var(--txt); border-color: var(--muted); }
+  .item button.borrar:hover, .item button.armado { color: var(--err); border-color: var(--err); }
+  .item button:disabled { opacity: .5; cursor: default; }
   h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
        margin: 18px 2px 8px; font-weight: 600; }
   #config { margin-top: 18px; font-size: 11px; color: var(--muted); }

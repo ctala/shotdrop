@@ -22,7 +22,7 @@ const EXT = {
 
 const cors = {
   'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'POST, OPTIONS',
+  'access-control-allow-methods': 'POST, DELETE, OPTIONS',
   'access-control-allow-headers': 'authorization, content-type',
   'access-control-max-age': '86400',
 };
@@ -70,10 +70,20 @@ export default {
       return json({ url: `${url.origin}/${clave}`, clave });
     }
 
-    if (req.method !== 'GET' && req.method !== 'HEAD') return json({ error: 'no' }, 405);
-
     const clave = decodeURIComponent(url.pathname.slice(1));
-    if (!clave || clave.includes('/')) return new Response('shotdrop', { status: 404 });
+    if (!/^[0-9a-f]{16}\.(png|jpg|webp|gif)$/.test(clave)) return new Response('shotdrop', { status: 404 });
+
+    // Borrar al tiro: para cuando se sube por error una captura con algo sensible.
+    if (req.method === 'DELETE') {
+      if (!env.UPLOAD_TOKEN) return json({ error: 'servidor sin token configurado' }, 503);
+      if (req.headers.get('authorization') !== `Bearer ${env.UPLOAD_TOKEN}`) {
+        return json({ error: 'token invalido' }, 401);
+      }
+      await env.SHOTS.delete(clave);
+      return new Response(null, { status: 204, headers: cors });
+    }
+
+    if (req.method !== 'GET' && req.method !== 'HEAD') return json({ error: 'metodo no permitido' }, 405);
 
     const obj = await env.SHOTS.get(clave);
     // Un 404 aca es lo normal cuando el lifecycle ya borro la captura.
@@ -82,7 +92,8 @@ export default {
     const h = new Headers();
     obj.writeHttpMetadata(h);
     h.set('etag', obj.httpEtag);
-    h.set('cache-control', 'public, max-age=3600');
+    // Sin cache: si se borra, tiene que dejar de verse en ese mismo momento, no en una hora.
+    h.set('cache-control', 'no-store');
     h.set('content-disposition', 'inline');
     return new Response(req.method === 'HEAD' ? null : obj.body, { headers: h });
   },

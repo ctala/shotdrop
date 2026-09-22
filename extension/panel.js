@@ -4,6 +4,10 @@ const lista = document.getElementById('lista');
 const titulo = document.getElementById('titulo');
 
 const MAX_HISTORIAL = 10;
+// Igual a la regla de lifecycle del bucket. Pasado este plazo el link ya no sirve y no se muestra.
+const VIDA_MS = 7 * 24 * 60 * 60 * 1000;
+
+const vivos = (historial) => historial.filter((h) => Date.now() - h.fecha < VIDA_MS);
 
 function aviso(texto, clase = '') {
   estado.textContent = texto;
@@ -70,12 +74,43 @@ async function subir({ nombre, tipo, datos }) {
 
 async function guardar(url) {
   const { historial = [] } = await chrome.storage.local.get('historial');
-  const nuevo = [{ url, fecha: Date.now() }, ...historial].slice(0, MAX_HISTORIAL);
+  const nuevo = [{ url, fecha: Date.now() }, ...vivos(historial)].slice(0, MAX_HISTORIAL);
   await chrome.storage.local.set({ historial: nuevo });
   pintar(nuevo);
 }
 
+async function quitar(url) {
+  const { historial = [] } = await chrome.storage.local.get('historial');
+  const nuevo = vivos(historial).filter((h) => h.url !== url);
+  await chrome.storage.local.set({ historial: nuevo });
+  pintar(nuevo);
+}
+
+async function borrar(url) {
+  try {
+    const { token } = await config();
+    const r = await fetch(url, { method: 'DELETE', headers: { authorization: `Bearer ${token}` } });
+    // 404 = ya no existia (lo borro el lifecycle o se borro antes): igual se saca de la lista.
+    if (!r.ok && r.status !== 404) {
+      const resp = await r.json().catch(() => ({}));
+      throw new Error(resp.error || `error ${r.status}`);
+    }
+    await quitar(url);
+    aviso('Borrado ✓ El link ya no funciona.', 'listo');
+  } catch (e) {
+    aviso(`No se pudo borrar: ${e.message}`, 'error');
+  }
+}
+
+function boton(texto, clase) {
+  const b = document.createElement('button');
+  b.textContent = texto;
+  if (clase) b.className = clase;
+  return b;
+}
+
 function pintar(historial) {
+  historial = vivos(historial);
   titulo.hidden = historial.length === 0;
   lista.replaceChildren();
 
@@ -94,18 +129,42 @@ function pintar(historial) {
     a.target = '_blank';
     a.textContent = url.replace(/^https?:\/\//, '');
 
-    const btn = document.createElement('button');
-    btn.textContent = 'Copiar';
-    btn.onclick = async () => {
+    const copiar = boton('Copiar');
+    copiar.onclick = async () => {
       await navigator.clipboard.writeText(url);
-      btn.textContent = '✓';
-      setTimeout(() => { btn.textContent = 'Copiar'; }, 1200);
+      copiar.textContent = '✓';
+      setTimeout(() => { copiar.textContent = 'Copiar'; }, 1200);
     };
 
-    item.append(img, a, btn);
+    // Dos clics para borrar: el primero arma, el segundo confirma. Sin dialogos del navegador.
+    const tacho = boton('Borrar', 'borrar');
+    let armado = null;
+    tacho.onclick = () => {
+      if (armado) {
+        clearTimeout(armado);
+        tacho.disabled = true;
+        tacho.textContent = '…';
+        return borrar(url);
+      }
+      tacho.textContent = '¿Seguro?';
+      tacho.classList.add('armado');
+      armado = setTimeout(() => {
+        armado = null;
+        tacho.textContent = 'Borrar';
+        tacho.classList.remove('armado');
+      }, 3000);
+    };
+
+    item.append(img, a, copiar, tacho);
     lista.append(item);
   }
 }
+
+// Al abrir el panel se limpian del almacenamiento los links que ya caducaron.
+chrome.storage.local.get('historial').then(({ historial = [] }) => {
+  const v = vivos(historial);
+  if (v.length !== historial.length) chrome.storage.local.set({ historial: v });
+});
 
 ['dragenter', 'dragover'].forEach((ev) =>
   document.addEventListener(ev, (e) => {
