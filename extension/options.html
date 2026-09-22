@@ -1,49 +1,103 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>shotdrop — configuración</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shotdrop</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-  body {
-    margin: 0; padding: 32px; background: #14141c; color: #ececf2; max-width: 520px;
-    font: 14px/1.6 -apple-system, system-ui, sans-serif;
+  body { padding: 40px 24px 60px; }
+  main { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+  header .wordmark { font-size: 26px; }
+  header p { margin: 8px 0 0; color: var(--muted); }
+
+  form { display: flex; flex-direction: column; gap: 18px; }
+  label, legend { display: block; font: 700 12px/1 var(--mono); color: var(--text); margin-bottom: 8px; }
+  .help { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+  input[type=text], input[type=password] {
+    width: 100%;
+    padding: 11px 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    font: 400 13px/1.2 var(--mono);
   }
-  h1 { font-size: 18px; margin: 0 0 6px; }
-  p.sub { color: #9a9aab; margin: 0 0 24px; font-size: 13px; }
-  label { display: block; margin: 16px 0 5px; font-size: 12px; color: #9a9aab; }
-  input {
-    width: 100%; padding: 9px 11px; background: #1e1e2a; border: 1px solid #32323f;
-    border-radius: 7px; color: #ececf2; font-family: ui-monospace, monospace; font-size: 13px;
-  }
-  input:focus { outline: none; border-color: #39ff14; }
-  button {
-    margin-top: 22px; padding: 9px 20px; background: #39ff14; border: 0; border-radius: 7px;
-    color: #14141c; font-weight: 600; font-size: 13px; cursor: pointer;
-  }
-  #ok { margin-left: 12px; color: #39ff14; font-size: 13px; }
-  .nota { margin-top: 26px; padding-top: 18px; border-top: 1px solid #32323f;
-          color: #9a9aab; font-size: 12px; }
+  input:focus { outline: none; border-color: var(--green); }
+  fieldset { border: 0; margin: 0; padding: 0; }
+  .radio { display: flex; align-items: center; gap: 8px; margin: 6px 0; font: 400 13px/1.4 var(--sans); color: var(--body); cursor: pointer; }
+  .radio input { accent-color: var(--green); }
+  .row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  #result { flex: 1; min-width: 200px; }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .card.cyan { border-color: var(--cyan); box-shadow: 6px 6px 0 0 rgba(0, 212, 255, 0.25); }
+  .card h2 { margin: 0 0 8px; font: 700 14px/1.3 var(--mono); color: var(--text); }
+  .card p { margin: 0 0 14px; }
+  .card p:last-child { margin-bottom: 0; }
+  code { font: 400 12px var(--mono); background: var(--inset); color: var(--green); padding: 2px 6px; border-radius: 4px; }
+  .shortcut { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  footer { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+  .heart { color: var(--magenta); }
 </style>
 </head>
 <body>
-  <h1>shotdrop</h1>
-  <p class="sub">Dónde se suben las capturas y con qué token.</p>
+<main>
+  <header>
+    <span class="wordmark">shotdrop<span class="cursor">_</span></span>
+    <p data-i18n="optSub">Where your screenshots go and which token uploads them.</p>
+  </header>
 
-  <label for="endpoint">Endpoint</label>
-  <input id="endpoint" placeholder="https://shots.cristiantala.com" spellcheck="false">
+  <form id="form" novalidate>
+    <div>
+      <label for="endpoint" data-i18n="endpointLabel">Server URL</label>
+      <input id="endpoint" type="text" placeholder="https://shotdrop.your-account.workers.dev" spellcheck="false" autocomplete="off">
+      <p class="help" data-i18n="endpointHelp"></p>
+    </div>
+    <div>
+      <label for="token" data-i18n="tokenLabel">Upload token</label>
+      <input id="token" type="password" spellcheck="false" autocomplete="off">
+      <p class="help" data-i18n="tokenHelp"></p>
+    </div>
+    <fieldset>
+      <legend data-i18n="copyModeLabel">After uploading, copy</legend>
+      <label class="radio"><input type="radio" name="copyMode" value="link" checked> <span data-i18n="copyModeLink">The link</span></label>
+      <label class="radio"><input type="radio" name="copyMode" value="agent"> <span data-i18n="copyModeAgent">An instruction for an AI agent</span></label>
+    </fieldset>
+    <div class="row">
+      <button type="submit" class="btn btn-green" data-i18n="save">Save</button>
+      <p id="result" class="status" role="status" aria-live="polite"></p>
+    </div>
+  </form>
 
-  <label for="token">Token de subida</label>
-  <input id="token" type="password" placeholder="el valor de UPLOAD_TOKEN" spellcheck="false">
+  <section class="card cyan">
+    <h2 data-i18n="noServerTitle">No server yet?</h2>
+    <p data-i18n="noServerBody"></p>
+    <p><a class="btn btn-green" href="https://deploy.workers.cloudflare.com/?url=https://github.com/ctala/shotdrop/tree/main/worker" target="_blank" rel="noopener" data-i18n="deployCta">Deploy to Cloudflare</a></p>
+  </section>
 
-  <button id="guardar">Guardar</button><span id="ok"></span>
+  <section class="card">
+    <div class="shortcut">
+      <div>
+        <h2 data-i18n="shortcutLabel">Keyboard shortcut</h2>
+        <p id="shortcutValue"></p>
+      </div>
+      <button id="changeShortcut" class="btn" type="button" data-i18n="changeShortcut">Change</button>
+    </div>
+  </section>
 
-  <p class="nota">
-    El token solo sirve para subir. Si alguna vez se filtra, lo cambias con
-    <code>wrangler secret put UPLOAD_TOKEN</code> y lo vuelves a pegar aquí.
-    Las llaves de R2 nunca pasan por el navegador.
-  </p>
+  <section class="card">
+    <h2 data-i18n="securityTitle">Security</h2>
+    <p id="security"></p>
+  </section>
 
-  <script src="comun.js"></script>
-  <script src="options.js"></script>
+  <footer>
+    <span id="madeBy"></span>
+    <a href="https://github.com/sponsors/ctala" target="_blank" rel="noopener"><span class="heart">♥</span> <span data-i18n="sponsor">Support the project</span></a>
+  </footer>
+</main>
+<script type="module" src="options.js"></script>
 </body>
 </html>

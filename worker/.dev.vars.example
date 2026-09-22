@@ -1,0 +1,3 @@
+# Long random string. The extension sends it to upload and delete screenshots.
+# Generate one with: openssl rand -hex 24
+UPLOAD_TOKEN=change-me-to-a-long-random-string

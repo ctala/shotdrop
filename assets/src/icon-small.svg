@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Variante para 16/32 px: sin marcas de recorte, que a ese tamano se vuelven ruido -->
+  <rect x="1" y="1" width="30" height="30" rx="4" fill="#0a0a1a" stroke="#39ff14" stroke-width="2"/>
+  <path fill="#39ff14" d="M16 4.5 C14.3 7.6 10.5 11.8 10.5 15.2 A5.5 5.5 0 0 0 21.5 15.2 C21.5 11.8 17.7 7.6 16 4.5 Z"/>
+  <rect x="9.5" y="23.5" width="13" height="3.5" fill="#39ff14"/>
+</svg>

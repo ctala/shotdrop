@@ -1,0 +1,28 @@
+{
+  "name": "shotdrop-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "shotdrop server: stores screenshots in your R2 bucket and serves short links that expire.",
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.109.0"
+  },
+  "cloudflare": {
+    "bindings": {
+      "SHOTS": {
+        "description": "Private R2 bucket where screenshots are stored. It is **never** made public: the Worker serves each file."
+      },
+      "UPLOAD_TOKEN": {
+        "description": "A long random string, for example the output of `openssl rand -hex 24`. Paste the same value in the extension's **Settings**. It can only upload and delete."
+      },
+      "TTL_DAYS": {
+        "description": "Days a screenshot lives before it is deleted. Default `7`."
+      }
+    }
+  },
+  "license": "MIT"
+}

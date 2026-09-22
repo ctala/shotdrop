@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="brand.css">
+<style>
+  body { width: 1280px; height: 800px; }
+  .content { display: flex; align-items: center; height: 100%; padding: 0 90px; gap: 80px; }
+  .left { flex: 1; }
+  .kicker { margin-bottom: 26px; }
+  h1 { font: 700 58px/1.12 var(--mono); color: var(--text); letter-spacing: -0.03em; margin-bottom: 30px; }
+  ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+  li { font-size: 22px; color: var(--body); display: flex; gap: 14px; align-items: baseline; }
+  li::before { content: '▸'; color: var(--cyan); font-family: var(--mono); }
+  .card { width: 400px; }
+  .card img { display: block; width: 100%; }
+</style>
+</head>
+<body class="glow">
+  <div class="grid"></div>
+  <div class="content">
+    <div class="left">
+      <p class="kicker">shotdrop<span class="cursor">_</span></p>
+      <h1 data-en>Drop it.<br><span class="hl">Link copied.</span></h1>
+      <h1 data-es>Suéltala.<br><span class="hl">Link copiado.</span></h1>
+      <ul data-en>
+        <li>Drag a screenshot or paste it with ⌘V</li>
+        <li>A short link lands in your clipboard</li>
+        <li>It deletes itself after 7 days, or right away</li>
+      </ul>
+      <ul data-es>
+        <li>Arrastra una captura o pégala con ⌘V</li>
+        <li>Un link corto queda en tu portapapeles</li>
+        <li>Se borra sola a los 7 días, o al tiro</li>
+      </ul>
+    </div>
+    <div class="card"><img data-src="../ui/panel-active-{lang}.png" alt=""></div>
+  </div>
+  <script src="lang.js"></script>
+</body>
+</html>

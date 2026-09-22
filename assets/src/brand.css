@@ -1,0 +1,43 @@
+/* Marketing assets. Tokens and mechanics from the Cristian Tala brand manual v2:
+   synthwave (neon on deep black, purple glow) + terminal (mono, cursor, // kicker) + neo-brutalism
+   (hard edges, offset shadows without blur, one green highlight per piece). */
+@font-face { font-family: 'JetBrains Mono'; font-weight: 700; src: url(../../extension/fonts/jetbrains-mono-700.woff2) format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 400; src: url(fonts/jetbrains-mono-400.woff2) format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 400; src: url(../../extension/fonts/inter-400.woff2) format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; src: url(../../extension/fonts/inter-600.woff2) format('woff2'); }
+
+:root {
+  --bg: #0a0a1a; --surface: #1a1a2e; --inset: #1a0a2e;
+  --text: #ffffff; --body: #dbdbe5; --muted: #b0b0b0;
+  --green: #39ff14; --cyan: #00d4ff; --purple: #7a00df; --magenta: #ff006e;
+  --mono: 'JetBrains Mono', monospace; --sans: 'Inter', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body { background: var(--bg); color: var(--body); font: 400 18px/1.5 var(--sans); position: relative; }
+
+/* Hero glow: purple top-left, cyan opposite. */
+.glow::before, .glow::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; }
+.glow::before { width: 900px; height: 900px; left: -300px; top: -420px; background: radial-gradient(circle, rgba(122,0,223,.28), transparent 65%); }
+.glow::after { width: 700px; height: 700px; right: -260px; bottom: -380px; background: radial-gradient(circle, rgba(0,212,255,.13), transparent 65%); }
+
+/* Purple perspective grid, masked toward the top. */
+.grid { position: absolute; left: -20%; right: -20%; bottom: 0; height: 55%; pointer-events: none;
+  background-image: linear-gradient(rgba(122,0,223,.18) 1px, transparent 1px), linear-gradient(90deg, rgba(122,0,223,.18) 1px, transparent 1px);
+  background-size: 64px 64px; transform: perspective(500px) rotateX(58deg); transform-origin: bottom;
+  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 95%); }
+
+.content { position: relative; z-index: 1; }
+.kicker { font: 700 16px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.kicker::before { content: '// '; color: var(--green); }
+.wordmark { font: 700 1em/1 var(--mono); color: var(--text); letter-spacing: -0.03em; }
+.cursor { color: var(--green); }
+.hl { background: var(--green); color: var(--bg); padding: 0 .18em; }
+.card { background: var(--surface); border: 2px solid var(--green); box-shadow: 10px 10px 0 0 rgba(57,255,20,.35); border-radius: 14px; overflow: hidden; }
+.card.cyan { border-color: var(--cyan); box-shadow: 10px 10px 0 0 rgba(0,212,255,.3); }
+.pill { display: inline-flex; align-items: center; gap: 8px; font: 700 14px/1 var(--mono); color: var(--body);
+  border: 1px solid rgba(176,176,176,.3); border-radius: 999px; padding: 9px 14px; background: rgba(26,26,46,.8); }
+.pill b { color: var(--cyan); font-weight: 700; }
+/* !important: component rules like .step { display: flex } must not bring the other language back. */
+html:not([lang=es]) [data-es] { display: none !important; }
+html[lang=es] [data-en] { display: none !important; }

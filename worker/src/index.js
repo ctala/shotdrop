@@ -1,18 +1,19 @@
 /**
- * shotdrop — sube una imagen a R2 y devuelve un link corto que caduca.
+ * shotdrop server — stores an image in R2 and returns a short link that expires.
  *
- * POR QUE EXISTE UN WORKER EN VEZ DE HABLAR CON R2 DIRECTO.
- * La extension corre en el navegador. Si firmara contra R2 ella misma, la access key
- * del bucket viviria en Chrome. Aca la extension solo conoce UPLOAD_TOKEN, que se rota
- * con un `wrangler secret put` y no da acceso a nada mas que a subir.
+ * Why a Worker sits in the middle: the browser extension never holds R2 credentials.
+ * It only knows UPLOAD_TOKEN, which can upload and delete, nothing else, and is rotated
+ * with `wrangler secret put UPLOAD_TOKEN`. The bucket stays private and is served from here.
  *
- * El bucket es PRIVADO. Nadie llega a un objeto si no tiene el link, y el link muere
- * cuando la regla de lifecycle borra el objeto (ver README).
+ * Expiry is enforced here too (on read and by an hourly cron), so a one-click deploy
+ * needs no manual R2 lifecycle rule.
  */
 
+const VERSION = '1.0.0';
 const MAX_BYTES = 25 * 1024 * 1024;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Solo imagenes: esto no es un servicio de archivos, es para pasar capturas.
+// Images only: this is for handing over screenshots, not a file host.
 const EXT = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
@@ -20,81 +21,136 @@ const EXT = {
   'image/gif': 'gif',
 };
 
-const cors = {
+const KEY_RE = /^[0-9a-f]{16}\.(png|jpg|webp|gif)$/;
+
+const CORS = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'POST, DELETE, OPTIONS',
   'access-control-allow-headers': 'authorization, content-type',
   'access-control-max-age': '86400',
 };
 
-const json = (obj, status = 200) =>
-  new Response(JSON.stringify(obj), {
+const MESSAGES = {
+  unauthorized: 'Missing or invalid upload token.',
+  not_configured: 'The server has no UPLOAD_TOKEN secret configured.',
+  unsupported_type: 'Only PNG, JPEG, WebP and GIF images are accepted.',
+  too_large: 'The image is larger than 25 MB.',
+  method_not_allowed: 'Method not allowed.',
+};
+
+const error = (code, status) =>
+  new Response(JSON.stringify({ error: code, message: MESSAGES[code] }), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8', ...cors },
+    headers: { 'content-type': 'application/json; charset=utf-8', ...CORS },
   });
 
-// 16 hex = 64 bits. Con el objeto borrandose a los 7 dias, adivinar un nombre no es
-// una amenaza realista.
-function nuevaClave(ext) {
-  const b = new Uint8Array(8);
-  crypto.getRandomValues(b);
-  const hex = [...b].map((n) => n.toString(16).padStart(2, '0')).join('');
-  return `${hex}.${ext}`;
+const notFound = () =>
+  new Response('This screenshot no longer exists.', {
+    status: 404,
+    headers: { 'content-type': 'text/plain; charset=utf-8', ...CORS },
+  });
+
+const ttlMs = (env) => {
+  const days = Number(env.TTL_DAYS);
+  return (Number.isFinite(days) && days > 0 ? days : 7) * DAY_MS;
+};
+
+const isExpired = (uploaded, env, now = Date.now()) => now - uploaded.getTime() >= ttlMs(env);
+
+// Fails closed: with no secret configured, "Bearer undefined" must not be a valid key.
+function authorize(req, env) {
+  if (!env.UPLOAD_TOKEN) return error('not_configured', 503);
+  if (req.headers.get('authorization') !== `Bearer ${env.UPLOAD_TOKEN}`) return error('unauthorized', 401);
+  return null;
+}
+
+// 16 hex chars = 64 bits. With objects deleted after the TTL, guessing a key is not a realistic threat.
+function newKey(ext) {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return `${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')}.${ext}`;
+}
+
+async function upload(req, env, url) {
+  if (req.method !== 'POST') return error('method_not_allowed', 405);
+  const denied = authorize(req, env);
+  if (denied) return denied;
+
+  const type = (req.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+  const ext = EXT[type];
+  if (!ext) return error('unsupported_type', 415);
+
+  if (Number(req.headers.get('content-length') || 0) > MAX_BYTES) return error('too_large', 413);
+
+  const key = newKey(ext);
+  await env.SHOTS.put(key, req.body, { httpMetadata: { contentType: type } });
+
+  return new Response(
+    JSON.stringify({ url: `${url.origin}/${key}`, key, expiresAt: Date.now() + ttlMs(env) }),
+    { headers: { 'content-type': 'application/json; charset=utf-8', ...CORS } }
+  );
+}
+
+async function serve(req, env, key) {
+  const obj = await env.SHOTS.get(key);
+  if (!obj) return notFound();
+
+  if (isExpired(obj.uploaded, env)) {
+    await env.SHOTS.delete(key);
+    return notFound();
+  }
+
+  const headers = new Headers(CORS);
+  obj.writeHttpMetadata(headers);
+  headers.set('etag', obj.httpEtag);
+  // No cache: a deleted screenshot has to stop showing right away, not an hour later.
+  headers.set('cache-control', 'no-store');
+  headers.set('content-disposition', 'inline');
+  headers.set('x-content-type-options', 'nosniff');
+  return new Response(req.method === 'HEAD' ? null : obj.body, { headers });
+}
+
+async function remove(req, env, key) {
+  const denied = authorize(req, env);
+  if (denied) return denied;
+  await env.SHOTS.delete(key);
+  return new Response(null, { status: 204, headers: CORS });
 }
 
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
 
-    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+    if (url.pathname === '/up') return upload(req, env, url);
 
-    if (url.pathname === '/up') {
-      if (req.method !== 'POST') return json({ error: 'usa POST' }, 405);
-
-      // Sin el secreto cargado, `Bearer ${undefined}` seria una clave valida. Falla cerrado.
-      if (!env.UPLOAD_TOKEN) return json({ error: 'servidor sin token configurado' }, 503);
-      if (req.headers.get('authorization') !== `Bearer ${env.UPLOAD_TOKEN}`) {
-        return json({ error: 'token invalido' }, 401);
-      }
-
-      const tipo = (req.headers.get('content-type') || '').split(';')[0].trim();
-      const ext = EXT[tipo];
-      if (!ext) return json({ error: `tipo no soportado: ${tipo || 'desconocido'}` }, 415);
-
-      const largo = Number(req.headers.get('content-length') || 0);
-      if (largo > MAX_BYTES) return json({ error: 'pesa mas de 25 MB' }, 413);
-
-      const clave = nuevaClave(ext);
-      await env.SHOTS.put(clave, req.body, { httpMetadata: { contentType: tipo } });
-
-      return json({ url: `${url.origin}/${clave}`, clave });
+    if (url.pathname === '/') {
+      return new Response(`shotdrop server ${VERSION} ✓ ready\n`, {
+        headers: { 'content-type': 'text/plain; charset=utf-8', ...CORS },
+      });
     }
 
-    const clave = decodeURIComponent(url.pathname.slice(1));
-    if (!/^[0-9a-f]{16}\.(png|jpg|webp|gif)$/.test(clave)) return new Response('shotdrop', { status: 404 });
+    const key = url.pathname.slice(1);
+    if (!KEY_RE.test(key)) return notFound();
 
-    // Borrar al tiro: para cuando se sube por error una captura con algo sensible.
-    if (req.method === 'DELETE') {
-      if (!env.UPLOAD_TOKEN) return json({ error: 'servidor sin token configurado' }, 503);
-      if (req.headers.get('authorization') !== `Bearer ${env.UPLOAD_TOKEN}`) {
-        return json({ error: 'token invalido' }, 401);
-      }
-      await env.SHOTS.delete(clave);
-      return new Response(null, { status: 204, headers: cors });
-    }
+    if (req.method === 'DELETE') return remove(req, env, key);
+    if (req.method === 'GET' || req.method === 'HEAD') return serve(req, env, key);
+    return error('method_not_allowed', 405);
+  },
 
-    if (req.method !== 'GET' && req.method !== 'HEAD') return json({ error: 'metodo no permitido' }, 405);
+  // Hourly cleanup, so expired objects do not pile up even if nobody opens their link.
+  // List everything first, delete after: never mutate the bucket while paging through it.
+  async scheduled(_event, env) {
+    const now = Date.now();
+    const expired = [];
+    let cursor;
+    do {
+      const page = await env.SHOTS.list({ cursor });
+      for (const o of page.objects) if (isExpired(o.uploaded, env, now)) expired.push(o.key);
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
 
-    const obj = await env.SHOTS.get(clave);
-    // Un 404 aca es lo normal cuando el lifecycle ya borro la captura.
-    if (!obj) return new Response('esta captura ya no existe', { status: 404 });
-
-    const h = new Headers();
-    obj.writeHttpMetadata(h);
-    h.set('etag', obj.httpEtag);
-    // Sin cache: si se borra, tiene que dejar de verse en ese mismo momento, no en una hora.
-    h.set('cache-control', 'no-store');
-    h.set('content-disposition', 'inline');
-    return new Response(req.method === 'HEAD' ? null : obj.body, { headers: h });
+    // R2 deletes up to 1000 keys per call.
+    for (let i = 0; i < expired.length; i += 1000) await env.SHOTS.delete(expired.slice(i, i + 1000));
   },
 };

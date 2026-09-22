@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- shotdrop: marcas de recorte (el shot) + una gota (el drop) que cae sobre el cursor "_" de la marca -->
+  <rect x="5" y="5" width="118" height="118" rx="12" fill="#0a0a1a" stroke="#39ff14" stroke-width="6"/>
+  <g fill="none" stroke="#00d4ff" stroke-width="7" stroke-linecap="square">
+    <path d="M24 42 V24 H42"/>
+    <path d="M86 24 H104 V42"/>
+    <path d="M24 86 V104 H42"/>
+    <path d="M104 86 V104 H86"/>
+  </g>
+  <path fill="#39ff14" d="M64 25 C58 36 44 52 44 65 A20 20 0 0 0 84 65 C84 52 70 36 64 25 Z"/>
+  <path fill="#0a0a1a" opacity=".55" d="M55 63 A10 10 0 0 0 60 75 A13 13 0 0 1 55 63 Z"/>
+  <rect x="42" y="93" width="44" height="9" fill="#39ff14"/>
+</svg>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="brand.css">
+<style>
+  body { width: 1280px; height: 800px; }
+  .content { height: 100%; padding: 70px 90px; display: flex; flex-direction: column; gap: 40px; }
+  .kicker { margin-bottom: 18px; }
+  h1 { font: 700 50px/1.12 var(--mono); color: var(--text); letter-spacing: -0.03em; }
+  .row { display: flex; gap: 40px; align-items: stretch; flex: 1; }
+  .term { flex: 1; font: 400 17px/1.75 var(--mono); padding: 0; }
+  .bar { display: flex; gap: 8px; padding: 14px 18px; border-bottom: 1px solid rgba(176,176,176,.2); }
+  .bar i { width: 12px; height: 12px; border-radius: 50%; background: rgba(176,176,176,.35); display: block; }
+  .body { padding: 22px 26px; color: var(--body); }
+  .p { color: var(--green); }
+  .c { color: var(--cyan); }
+  .m { color: var(--muted); }
+  .steps { width: 380px; display: flex; flex-direction: column; gap: 18px; justify-content: center; }
+  .step { display: flex; gap: 16px; align-items: flex-start; font-size: 21px; color: var(--body); }
+  .n { font: 700 18px/1 var(--mono); color: var(--bg); background: var(--cyan); border-radius: 6px; padding: 7px 10px; flex: none; }
+  .step b { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body class="glow">
+  <div class="grid"></div>
+  <div class="content">
+    <div>
+      <p class="kicker" data-en>Made for AI agents</p>
+      <p class="kicker" data-es>Hecho para agentes de IA</p>
+      <h1 data-en>One click. Your agent <span class="hl">sees it</span>.</h1>
+      <h1 data-es>Un clic. Tu agente <span class="hl">la ve</span>.</h1>
+    </div>
+    <div class="row">
+      <div class="card cyan term">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <div class="body">
+          <div data-en><span class="p">›</span> Look at this screenshot. Download it with <span class="c">`curl -so /tmp/e41b02979f927530.png https://shots.example.com/e41b02979f927530.png`</span> and read /tmp/e41b02979f927530.png</div>
+          <div data-es><span class="p">›</span> Mira esta captura. Descárgala con <span class="c">`curl -so /tmp/e41b02979f927530.png https://shots.example.com/e41b02979f927530.png`</span> y lee /tmp/e41b02979f927530.png</div>
+          <br>
+          <div><span class="c">●</span> Bash<span class="m">(curl -so /tmp/e41b02979f927530.png …)</span></div>
+          <div><span class="c">●</span> Read<span class="m">(/tmp/e41b02979f927530.png)</span></div>
+          <br>
+          <div data-en>The test fails in <span class="p">render (panel.js:88)</span>: it reads a property of undefined. Fixing it now.</div>
+          <div data-es>El test falla en <span class="p">render (panel.js:88)</span>: lee una propiedad de undefined. Lo arreglo.</div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step" data-en><span class="n">1</span><span>Drop the screenshot in the side panel</span></div>
+        <div class="step" data-es><span class="n">1</span><span>Suelta la captura en el panel lateral</span></div>
+        <div class="step" data-en><span class="n">2</span><span>Click <b>Agent</b>: the instruction is copied</span></div>
+        <div class="step" data-es><span class="n">2</span><span>Clic en <b>Agente</b>: la instrucción queda copiada</span></div>
+        <div class="step" data-en><span class="n">3</span><span>Paste it in any terminal, on any machine</span></div>
+        <div class="step" data-es><span class="n">3</span><span>Pégala en cualquier terminal, en cualquier máquina</span></div>
+      </div>
+    </div>
+  </div>
+  <script src="lang.js"></script>
+</body>
+</html>

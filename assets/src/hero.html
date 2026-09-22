@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="brand.css">
+<style>
+  body { width: 1280px; height: 640px; }
+  .content { display: flex; align-items: center; height: 100%; padding: 0 80px; gap: 70px; }
+  .left { flex: 1; }
+  .brand { display: flex; align-items: center; gap: 26px; margin-bottom: 34px; }
+  .brand img { width: 108px; height: 108px; }
+  .brand .wordmark { font-size: 84px; }
+  h1 { font: 700 40px/1.2 var(--mono); color: var(--text); letter-spacing: -0.02em; margin-bottom: 22px; }
+  p.sub { font-size: 21px; color: var(--body); max-width: 560px; margin-bottom: 30px; }
+  .pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .right .card { width: 290px; }
+  .right img { display: block; width: 100%; }
+</style>
+</head>
+<body class="glow">
+  <div class="grid"></div>
+  <div class="content">
+    <div class="left">
+      <div class="brand"><img src="icon.svg" alt=""><span class="wordmark">shotdrop<span class="cursor">_</span></span></div>
+      <h1 data-en>Drop a screenshot.<br>Get a link that <span class="hl">expires</span>.</h1>
+      <h1 data-es>Suelta una captura.<br>Recibe un link que <span class="hl">caduca</span>.</h1>
+      <p class="sub" data-en>Hand screenshots to AI agents on any machine. Stored on your own Cloudflare R2, deleted on their own.</p>
+      <p class="sub" data-es>Pásale capturas a tus agentes de IA en cualquier máquina. Guardadas en tu propio Cloudflare R2, se borran solas.</p>
+      <div class="pills">
+        <span class="pill"><b>▸</b> Chrome</span>
+        <span class="pill"><b>▸</b> Cloudflare R2</span>
+        <span class="pill"><b>▸</b> <span data-en>Open source</span><span data-es>Código abierto</span></span>
+      </div>
+    </div>
+    <div class="right"><div class="card"><img data-src="../ui/panel-{lang}.png" alt=""></div></div>
+  </div>
+  <script src="lang.js"></script>
+</body>
+</html>

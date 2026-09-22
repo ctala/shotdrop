@@ -1,63 +1,85 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>shotdrop</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-  :root {
-    --bg: #14141c; --card: #1e1e2a; --line: #32323f;
-    --txt: #ececf2; --muted: #9a9aab; --ok: #39ff14; --err: #ff5c7a;
+  body { padding: 14px 14px 12px; min-height: 100vh; display: flex; flex-direction: column; gap: 12px; }
+  header { display: flex; align-items: center; justify-content: space-between; }
+  .icon-btn { background: none; border: 0; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 6px; display: grid; }
+  .icon-btn:hover { color: var(--text); }
+
+  #drop {
+    border: 2px dashed var(--cyan);
+    border-radius: 12px;
+    padding: 26px 14px 22px;
+    text-align: center;
+    background: var(--surface);
+    transition: border-color .12s, box-shadow .12s, transform .12s;
   }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 14px; background: var(--bg); color: var(--txt);
-    font: 13px/1.5 -apple-system, system-ui, sans-serif;
+  #drop.active { border-style: solid; border-color: var(--green); box-shadow: var(--shadow-green); transform: translate(-2px, -2px); }
+  #drop.busy { border-color: var(--purple); }
+  #drop svg { display: block; margin: 0 auto 10px; }
+  #drop strong { display: block; font: 700 14px/1.3 var(--mono); color: var(--text); margin-bottom: 6px; }
+  #drop span { color: var(--muted); font-size: 12px; }
+
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .empty { color: var(--muted); font-size: 12px; margin: 0; }
+  li {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 7px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px;
   }
-  #zona {
-    border: 2px dashed var(--line); border-radius: 12px; padding: 30px 14px;
-    text-align: center; color: var(--muted); transition: .12s;
-  }
-  #zona.activa { border-color: var(--ok); color: var(--txt); background: #1a2418; }
-  #zona strong { display: block; color: var(--txt); font-size: 14px; margin-bottom: 4px; }
-  kbd {
-    background: var(--card); border: 1px solid var(--line); border-radius: 4px;
-    padding: 1px 5px; font-size: 11px; font-family: ui-monospace, monospace;
-  }
-  #estado { min-height: 18px; margin: 10px 2px; font-size: 12px; color: var(--muted); }
-  #estado.error { color: var(--err); }
-  #estado.listo { color: var(--ok); }
-  .item {
-    display: flex; gap: 8px; align-items: center; background: var(--card);
-    border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin-bottom: 6px;
-  }
-  .item img { width: 38px; height: 38px; object-fit: cover; border-radius: 5px; flex: none; }
-  .item a {
-    flex: 1; min-width: 0; color: var(--txt); font-family: ui-monospace, monospace;
-    font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .item button {
-    flex: none; background: transparent; border: 1px solid var(--line); color: var(--muted);
-    border-radius: 6px; padding: 5px 9px; cursor: pointer; font-size: 11px;
-  }
-  .item button:hover { color: var(--txt); border-color: var(--muted); }
-  .item button.borrar:hover, .item button.armado { color: var(--err); border-color: var(--err); }
-  .item button:disabled { opacity: .5; cursor: default; }
-  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
-       margin: 18px 2px 8px; font-weight: 600; }
-  #config { margin-top: 18px; font-size: 11px; color: var(--muted); }
-  #config a { color: var(--muted); }
+  li img { grid-row: span 2; width: 48px; height: 48px; object-fit: cover; border-radius: 5px; background: var(--inset); }
+  li a { font: 700 11px/1.3 var(--mono); color: var(--body); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; align-self: end; }
+  li a:hover { color: var(--cyan); }
+  .actions { display: flex; gap: 6px; }
+
+  footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); padding-top: 8px; border-top: 1px solid var(--line); }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+  .heart { color: var(--magenta); }
 </style>
 </head>
 <body>
-  <div id="zona">
-    <strong>Suelta la captura aquí</strong>
-    o pega con <kbd>⌘V</kbd>
+  <header>
+    <span class="wordmark">shotdrop<span class="cursor">_</span></span>
+    <button id="openSettings" class="icon-btn" data-i18n-title="settings" data-i18n-aria-label="settings">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <div id="drop">
+    <svg width="44" height="44" viewBox="0 0 128 128" aria-hidden="true">
+      <g fill="none" stroke="#00d4ff" stroke-width="7" stroke-linecap="square"><path d="M24 42 V24 H42"/><path d="M86 24 H104 V42"/><path d="M24 86 V104 H42"/><path d="M104 86 V104 H86"/></g>
+      <path fill="#39ff14" d="M64 25 C58 36 44 52 44 65 A20 20 0 0 0 84 65 C84 52 70 36 64 25 Z"/>
+      <rect x="42" y="93" width="44" height="9" fill="#39ff14"/>
+    </svg>
+    <strong data-i18n="dropTitle">Drop your screenshot here</strong>
+    <span><span data-i18n="dropOr">or paste it with</span> <kbd id="pasteKey">⌘V</kbd></span>
   </div>
-  <div id="estado"></div>
-  <h2 id="titulo" hidden>Últimos links</h2>
-  <div id="lista"></div>
-  <div id="config"><a href="#" id="abrirOpciones">Configuración</a></div>
-  <script src="comun.js"></script>
-  <script src="panel.js"></script>
+
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+
+  <section>
+    <h2 class="kicker" data-i18n="recent">Recent links</h2>
+    <p id="empty" class="empty" data-i18n="empty" hidden></p>
+    <ul id="list"></ul>
+  </section>
+
+  <footer>
+    <a href="#" id="shortcut"></a>
+    <a href="https://github.com/sponsors/ctala" target="_blank" rel="noopener"><span class="heart">♥</span> <span data-i18n="sponsor">Support the project</span></a>
+  </footer>
+
+  <script type="module" src="panel.js"></script>
 </body>
 </html>

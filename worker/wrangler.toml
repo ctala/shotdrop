@@ -1,14 +1,20 @@
+# shotdrop server. This is the config the "Deploy to Cloudflare" button reads.
 name = "shotdrop"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
+workers_dev = true
 
-# El bucket es privado a proposito: se sirve por este Worker, no por dominio publico.
+# Private bucket: objects are served through this Worker, never through a public R2 domain.
 [[r2_buckets]]
 binding = "SHOTS"
-bucket_name = "shots"
+bucket_name = "shotdrop"
 
-# UPLOAD_TOKEN no va aca. Se pone con:  wrangler secret put UPLOAD_TOKEN
+[vars]
+# Days a screenshot lives before it is deleted.
+TTL_DAYS = "7"
 
-[[routes]]
-pattern = "shots.cristiantala.com"
-custom_domain = true
+# Hourly cleanup of expired screenshots. No manual R2 lifecycle rule needed.
+[triggers]
+crons = ["17 * * * *"]
+
+# UPLOAD_TOKEN is a secret, not a var:  npx wrangler secret put UPLOAD_TOKEN

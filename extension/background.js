@@ -1,8 +1,9 @@
-// Un clic en el icono abre el panel lateral. Tiene que ser el panel y no un popup:
-// el popup se cierra al soltar el foco, y arrastrar desde Finder saca el foco de Chrome.
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-  chrome.storage.local.get('token').then(({ token }) => {
-    if (!token) chrome.runtime.openOptionsPage();
-  });
+// Clicking the toolbar icon (or its keyboard shortcut) opens the side panel. It has to be the side
+// panel and not a popup: a popup closes when Chrome loses focus, and dragging from Finder does that.
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+
+chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+  if (reason !== 'install') return;
+  const { token } = await chrome.storage.local.get('token');
+  if (!token) chrome.runtime.openOptionsPage();
 });

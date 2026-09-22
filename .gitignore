@@ -1,5 +1,8 @@
 .wrangler/
-node_modules/
+node_modules
 .dev.vars
 .env*
+!.dev.vars.example
 .DS_Store
+dist/
+test-results/

@@ -1,0 +1,19 @@
+# The author's own instance (shots.cristiantala.com). Public users deploy wrangler.toml instead.
+#   npx wrangler deploy --config wrangler.cristiantala.toml
+name = "shotdrop"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[[r2_buckets]]
+binding = "SHOTS"
+bucket_name = "shots"
+
+[vars]
+TTL_DAYS = "7"
+
+[triggers]
+crons = ["17 * * * *"]
+
+[[routes]]
+pattern = "shots.cristiantala.com"
+custom_domain = true
