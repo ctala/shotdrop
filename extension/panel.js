@@ -16,9 +16,22 @@ async function config() {
   return { endpoint: endpoint.replace(/\/+$/, ''), token };
 }
 
-async function subir(archivo) {
-  if (!archivo.type.startsWith('image/')) {
-    aviso(`"${archivo.name}" no es una imagen.`, 'error');
+// Los bytes se leen EN el drop, no al subir. La miniatura flotante de ⌘⇧4 entrega un
+// archivo temporal que macOS borra apenas termina el arrastre; si fetch lo lee despues,
+// ya no existe y falla con un "Failed to fetch" sin respuesta del servidor.
+function leerTodos(archivos) {
+  return Promise.all(
+    [...archivos].map(async (a) => ({
+      nombre: a.name,
+      tipo: a.type,
+      datos: a.type.startsWith('image/') ? await a.arrayBuffer() : null,
+    }))
+  );
+}
+
+async function subir({ nombre, tipo, datos }) {
+  if (!datos) {
+    aviso(`"${nombre}" no es una imagen.`, 'error');
     return;
   }
 
@@ -27,23 +40,23 @@ async function subir(archivo) {
     const { endpoint, token } = await config();
     const r = await fetch(`${endpoint}/up`, {
       method: 'POST',
-      headers: { authorization: `Bearer ${token}`, 'content-type': archivo.type },
-      body: archivo,
+      headers: { authorization: `Bearer ${token}`, 'content-type': tipo },
+      body: datos,
     });
 
-    const datos = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(datos.error || `error ${r.status}`);
+    const resp = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(resp.error || `error ${r.status}`);
 
     // El copiado ocurre dentro del gesto de soltar, asi que Chrome lo permite. Si igual
     // falla (panel sin foco), el link queda a la vista con su boton de copiar.
     let copiado = true;
     try {
-      await navigator.clipboard.writeText(datos.url);
+      await navigator.clipboard.writeText(resp.url);
     } catch {
       copiado = false;
     }
 
-    await guardar(datos.url);
+    await guardar(resp.url);
     aviso(copiado ? 'Link copiado ✓' : 'Listo — copia el link abajo', 'listo');
   } catch (e) {
     aviso(e.message, 'error');
@@ -103,13 +116,20 @@ function pintar(historial) {
   })
 );
 
-document.addEventListener('drop', async (e) => {
-  for (const archivo of e.dataTransfer.files) await subir(archivo);
-});
+async function recibir(archivos) {
+  let leidos;
+  try {
+    leidos = await leerTodos(archivos);
+  } catch {
+    aviso('No pude leer el archivo. Si arrastraste la miniatura flotante, prueba con el archivo ya guardado.', 'error');
+    return;
+  }
+  if (leidos.length === 0) return aviso('No llegó ninguna imagen.', 'error');
+  for (const a of leidos) await subir(a);
+}
 
-document.addEventListener('paste', async (e) => {
-  for (const item of e.clipboardData.files) await subir(item);
-});
+document.addEventListener('drop', (e) => recibir(e.dataTransfer.files));
+document.addEventListener('paste', (e) => recibir(e.clipboardData.files));
 
 document.getElementById('abrirOpciones').onclick = (e) => {
   e.preventDefault();

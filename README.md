@@ -60,3 +60,12 @@ Devuelve `{"url": "..."}`. Esto es lo que usaría un agente del Spark, donde no 
 - Solo imágenes (png, jpg, webp, gif), 25 MB máximo
 - La captura la sacas tú con `⌘⇧4`. Capturar la página desde el navegador es la v2
 - La expiración es del bucket, no por archivo: son 7 días para todos
+
+## Probar el panel antes de recargar la extensión
+
+`node --check` solo mira la sintaxis. Esto ejecuta `extension/panel.js` tal cual contra el
+servidor real (5 casos: drop, pegar, no-imagen, token malo, archivo temporal borrado):
+
+```bash
+SHOTDROP_UPLOAD_TOKEN=<de Infisical> node tests/probar_panel.mjs
+```
