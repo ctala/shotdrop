@@ -12,8 +12,8 @@ function aviso(texto, clase = '') {
 
 async function config() {
   const { endpoint, token } = await chrome.storage.local.get(['endpoint', 'token']);
-  if (!endpoint || !token) throw new Error('Falta configurar el endpoint y el token.');
-  return { endpoint: endpoint.replace(/\/+$/, ''), token };
+  if (!token) throw new Error('Falta el token: ábrelo en Configuración.');
+  return { endpoint: normalizarEndpoint(endpoint), token };
 }
 
 // Los bytes se leen EN el drop, no al subir. La miniatura flotante de ⌘⇧4 entrega un
@@ -38,11 +38,16 @@ async function subir({ nombre, tipo, datos }) {
   aviso('Subiendo…');
   try {
     const { endpoint, token } = await config();
-    const r = await fetch(`${endpoint}/up`, {
-      method: 'POST',
-      headers: { authorization: `Bearer ${token}`, 'content-type': tipo },
-      body: datos,
-    });
+    let r;
+    try {
+      r = await fetch(`${endpoint}/up`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}`, 'content-type': tipo },
+        body: datos,
+      });
+    } catch {
+      throw new Error(`No pude conectar con ${endpoint}. Revisa la Configuración.`);
+    }
 
     const resp = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(resp.error || `error ${r.status}`);

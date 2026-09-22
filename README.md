@@ -69,3 +69,11 @@ servidor real (5 casos: drop, pegar, no-imagen, token malo, archivo temporal bor
 ```bash
 SHOTDROP_UPLOAD_TOKEN=<de Infisical> node tests/probar_panel.mjs
 ```
+
+Y la prueba que de verdad importa: carga la extensión en Chromium, la configura por su página
+de opciones y suelta una imagen en el panel. Así se detectó el "Failed to fetch" por un
+endpoint sin `https://` (requiere `npm i playwright`):
+
+```bash
+SHOTDROP_UPLOAD_TOKEN=<de Infisical> ENDPOINT=shots.cristiantala.com node tests/extension_real.mjs
+```

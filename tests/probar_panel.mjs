@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import zlib from 'node:zlib';
 
 const PANEL = new URL('../extension/panel.js', import.meta.url).pathname;
+const COMUN = new URL('../extension/comun.js', import.meta.url).pathname;
 
 function png() {
   const crc = (b) => { let c, t = []; for (let n = 0; n < 256; n++) { c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } c = 0xffffffff; for (const x of b) c = t[(c ^ x) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
@@ -45,7 +46,8 @@ async function correr({ token, archivos, evento = 'drop' }) {
   });
 
   // Carga el archivo real del panel, sin modificarlo.
-  new Function(fs.readFileSync(PANEL, 'utf8'))();
+  // Mismo orden que los <script> de panel.html: comun.js y despues panel.js, en un solo ambito.
+  new Function(fs.readFileSync(COMUN, 'utf8') + '\n' + fs.readFileSync(PANEL, 'utf8'))();
   await new Promise((r) => setTimeout(r, 50));
 
   const e = { preventDefault() {}, relatedTarget: null,
